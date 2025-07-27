@@ -1,50 +1,56 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { UserContext } from '../../context/userContext';
 
 const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user, setUser } = useContext(UserContext);
 
-    // Pages where we don't want to show the Login button
-    const hideLoginBtnRoutes = ['/dashboard', '/thank-you'];
-
-    // Show Logout only on Dashboard
-    const isDashboard = location.pathname === '/dashboard';
+    // 🧠 Check user from localStorage on refresh
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser && !user) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, [user, setUser]);
 
     const handleLogout = () => {
-        // Clear user from localStorage or context (if any)
-        localStorage.removeItem('user'); // Optional
-        navigate('/login');
+        localStorage.removeItem('user');
+        setUser(null);
+        navigate('/');
     };
 
     return (
-        <header className="bg-white shadow-sm sticky top-0 z-30 w-full">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                {/* Logo / Title */}
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                    Student Feedback System
-                </h2>
+        <nav className="bg-white shadow p-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-blue-600">Feedback System</h1>
 
-                {/* Login / Logout Button */}
-                {isDashboard ? (
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
-                    >
-                        Logout
-                    </button>
-                ) : !hideLoginBtnRoutes.includes(location.pathname) ? (
-                    <button
-                        onClick={() => navigate('/login')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+            <div>
+                {/* Show logout only if user is logged in and on admin dashboard */}
+                {user?.role === 'admin' && location.pathname === '/admin/dashboard' ? (
+                    // <button
+
+                    //     onClick={handleLogout}
+                    //     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    // >
+                    //     Logout
+                    // </button>
+                    <Link
+                        to="/"
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                     >
                         Login
-                    </button>
+                    </Link>
                 ) : (
-                    <div className="w-[72px]" /> // spacing placeholder
+                    <Link
+                        to="/login"
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    >
+                        Login
+                    </Link>
                 )}
             </div>
-        </header>
+        </nav>
     );
 };
 
